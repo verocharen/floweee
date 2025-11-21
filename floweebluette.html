@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="id">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengingat Minum Air</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      color: #2d3748;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #718096;
+      margin-bottom: 32px;
+    }
+
+    .body-container {
+      position: relative;
+      width: 200px;
+      height: 400px;
+      margin: 0 auto 32px;
+    }
+
+    .body-outline {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 400px;
+    }
+
+    .water-fill {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 0%;
+      overflow: hidden;
+      transition: height 0.6s ease-out;
+    }
+
+    .water-fill svg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+
+    .percentage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-weight: bold;
+      color: #2d3748;
+      z-index: 10;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: #f7fafc;
+      border-radius: 12px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #718096;
+      margin-top: 4px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .water-button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .water-button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+    }
+
+    .water-button:active {
+      transform: translateY(0);
+    }
+
+    .water-button.small {
+      padding: 12px 24px;
+      font-size: 16px;
+    }
+
+    .reset-button {
+      background: #e2e8f0;
+      color: #4a5568;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .reset-button:hover {
+      background: #cbd5e0;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <h1 class="title" id="appTitle">Pengingat Minum Air</h1>
+   <p class="subtitle" id="targetLabel">Target Harian: 2000 ml</p>
+   <div class="body-container">
+    <svg class="body-outline" viewbox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg"><!-- Kepala --> <circle cx="100" cy="35" r="28" stroke="#cbd5e0" stroke-width="3" /> <!-- Leher Tebal --> <path d="M 88 60 L 85 80 M 112 60 L 115 80" stroke="#cbd5e0" stroke-width="4" /> <!-- Bahu Lebar --> <ellipse cx="50" cy="95" rx="18" ry="12" stroke="#cbd5e0" stroke-width="3" /> <ellipse cx="150" cy="95" rx="18" ry="12" stroke="#cbd5e0" stroke-width="3" /> <line x1="68" y1="95" x2="85" y2="85" stroke="#cbd5e0" stroke-width="3" /> <line x1="132" y1="95" x2="115" y2="85" stroke="#cbd5e0" stroke-width="3" /> <!-- Lengan Kiri Berotot (Bisep & Trisep) --> <path d="M 50 107 Q 42 130 38 155" stroke="#cbd5e0" stroke-width="7" stroke-linecap="round" /> <ellipse cx="41" cy="130" rx="8" ry="15" stroke="#cbd5e0" stroke-width="2" transform="rotate(-20 41 130)" /> <!-- Lengan Bawah Kiri --> <path d="M 38 155 L 35 195" stroke="#cbd5e0" stroke-width="5" stroke-linecap="round" /> <!-- Lengan Kanan Berotot (Bisep & Trisep) --> <path d="M 150 107 Q 158 130 162 155" stroke="#cbd5e0" stroke-width="7" stroke-linecap="round" /> <ellipse cx="159" cy="130" rx="8" ry="15" stroke="#cbd5e0" stroke-width="2" transform="rotate(20 159 130)" /> <!-- Lengan Bawah Kanan --> <path d="M 162 155 L 165 195" stroke="#cbd5e0" stroke-width="5" stroke-linecap="round" /> <!-- Dada Bidang (Pectorals) --> <path d="M 85 85 Q 75 100 70 120" stroke="#cbd5e0" stroke-width="3" /> <path d="M 115 85 Q 125 100 130 120" stroke="#cbd5e0" stroke-width="3" /> <ellipse cx="85" cy="110" rx="12" ry="18" stroke="#cbd5e0" stroke-width="2" /> <ellipse cx="115" cy="110" rx="12" ry="18" stroke="#cbd5e0" stroke-width="2" /> <!-- Perut Six Pack --> <path d="M 70 120 L 68 180 Q 68 210 75 235" stroke="#cbd5e0" stroke-width="3" /> <path d="M 130 120 L 132 180 Q 132 210 125 235" stroke="#cbd5e0" stroke-width="3" /> <line x1="85" y1="135" x2="115" y2="135" stroke="#cbd5e0" stroke-width="2" /> <line x1="85" y1="155" x2="115" y2="155" stroke="#cbd5e0" stroke-width="2" /> <line x1="85" y1="175" x2="115" y2="175" stroke="#cbd5e0" stroke-width="2" /> <!-- V-Shape ke Pinggang --> <line x1="75" y1="235" x2="125" y2="235" stroke="#cbd5e0" stroke-width="3" /> <!-- Kaki Berotot (Paha) --> <path d="M 80 235 L 75 300 Q 73 315 72 330" stroke="#cbd5e0" stroke-width="7" stroke-linecap="round" /> <path d="M 120 235 L 125 300 Q 127 315 128 330" stroke="#cbd5e0" stroke-width="7" stroke-linecap="round" /> <ellipse cx="77" cy="270" rx="10" ry="20" stroke="#cbd5e0" stroke-width="2" /> <ellipse cx="123" cy="270" rx="10" ry="20" stroke="#cbd5e0" stroke-width="2" /> <!-- Betis --> <path d="M 72 330 Q 70 355 68 385" stroke="#cbd5e0" stroke-width="5" stroke-linecap="round" /> <path d="M 128 330 Q 130 355 132 385" stroke="#cbd5e0" stroke-width="5" stroke-linecap="round" /> <ellipse cx="70" cy="355" rx="6" ry="15" stroke="#cbd5e0" stroke-width="2" /> <ellipse cx="130" cy="355" rx="6" ry="15" stroke="#cbd5e0" stroke-width="2" />
+    </svg>
+    <div class="water-fill" id="waterFill">
+     <svg viewbox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg"><!-- Kepala --> <circle cx="100" cy="35" r="28" fill="#667eea" opacity="0.8" /> <!-- Leher Tebal --> <polygon points="88,60 85,80 115,80 112,60" fill="#667eea" opacity="0.8" /> <!-- Bahu Lebar --> <ellipse cx="50" cy="95" rx="18" ry="12" fill="#667eea" opacity="0.8" /> <ellipse cx="150" cy="95" rx="18" ry="12" fill="#667eea" opacity="0.8" /> <polygon points="68,95 85,85 115,85 132,95 130,105 70,105" fill="#667eea" opacity="0.8" /> <!-- Lengan Kiri Berotot --> <path d="M 50 107 Q 42 130 38 155 L 35 195 L 40 195 L 43 155 Q 48 130 54 107 Z" fill="#667eea" opacity="0.8" /> <ellipse cx="41" cy="130" rx="8" ry="15" fill="#667eea" opacity="0.7" transform="rotate(-20 41 130)" /> <!-- Lengan Kanan Berotot --> <path d="M 150 107 Q 158 130 162 155 L 165 195 L 160 195 L 157 155 Q 152 130 146 107 Z" fill="#667eea" opacity="0.8" /> <ellipse cx="159" cy="130" rx="8" ry="15" fill="#667eea" opacity="0.7" transform="rotate(20 159 130)" /> <!-- Dada Bidang (Pectorals) --> <ellipse cx="85" cy="110" rx="12" ry="18" fill="#667eea" opacity="0.75" /> <ellipse cx="115" cy="110" rx="12" ry="18" fill="#667eea" opacity="0.75" /> <!-- Perut Six Pack & Badan --> <path d="M 70 120 L 68 180 Q 68 210 75 235 L 125 235 Q 132 210 132 180 L 130 120 Z" fill="#667eea" opacity="0.8" /> <rect x="85" y="133" width="30" height="8" fill="#667eea" opacity="0.6" rx="2" /> <rect x="85" y="153" width="30" height="8" fill="#667eea" opacity="0.6" rx="2" /> <rect x="85" y="173" width="30" height="8" fill="#667eea" opacity="0.6" rx="2" /> <!-- Kaki Berotot (Paha) --> <path d="M 80 235 L 75 300 Q 73 315 72 330 L 68 385 L 74 385 L 78 330 Q 80 315 82 300 L 85 235 Z" fill="#667eea" opacity="0.8" /> <path d="M 120 235 L 125 300 Q 127 315 128 330 L 132 385 L 126 385 L 122 330 Q 120 315 118 300 L 115 235 Z" fill="#667eea" opacity="0.8" /> <ellipse cx="77" cy="270" rx="10" ry="20" fill="#667eea" opacity="0.7" /> <ellipse cx="123" cy="270" rx="10" ry="20" fill="#667eea" opacity="0.7" /> <!-- Betis --> <ellipse cx="70" cy="355" rx="6" ry="15" fill="#667eea" opacity="0.75" /> <ellipse cx="130" cy="355" rx="6" ry="15" fill="#667eea" opacity="0.75" />
+     </svg>
+    </div>
+    <div class="percentage" id="percentage">
+     0%
+    </div>
+   </div>
+   <div class="stats">
+    <div class="stat-item">
+     <div class="stat-value" id="currentAmount">
+      0
+     </div>
+     <div class="stat-label">
+      ml diminum
+     </div>
+    </div>
+    <div class="stat-item">
+     <div class="stat-value" id="remaining">
+      2000
+     </div>
+     <div class="stat-label">
+      ml tersisa
+     </div>
+    </div>
+   </div>
+   <div class="button-group"><button class="water-button small" id="btn250" onclick="addWater(250)">+250ml</button> <button class="water-button" id="btnMain" onclick="addWater(500)">+500ml</button>
+   </div><button class="reset-button" id="resetBtn" onclick="resetDaily()">Reset Hari Ini</button>
+  </div>
+  <script>
+    const TARGET_ML = 2000;
+    let currentTotal = 0;
+    let todayRecords = [];
+
+    const defaultConfig = {
+      app_title: "Pengingat Minum Air",
+      target_label: "Target Harian: 2000 ml",
+      button_text: "+500ml",
+      background_color: "#667eea",
+      surface_color: "#ffffff",
+      text_color: "#2d3748",
+      primary_action_color: "#667eea",
+      secondary_action_color: "#e2e8f0",
+      font_family: "Segoe UI",
+      font_size: 16
+    };
+
+    const dataHandler = {
+      onDataChanged(data) {
+        todayRecords = data;
+        updateDisplay();
+      }
+    };
+
+    async function initApp() {
+      const result = await window.dataSdk.init(dataHandler);
+      if (!result.isOk) {
+        console.error("Failed to initialize data SDK");
+      }
+    }
+
+    function updateDisplay() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayData = todayRecords.filter(record => 
+        record.timestamp && record.timestamp.startsWith(today)
+      );
+      
+      currentTotal = todayData.reduce((sum, record) => sum + (record.total_ml || 0), 0);
+      
+      const percentage = Math.min(Math.round((currentTotal / TARGET_ML) * 100), 100);
+      
+      document.getElementById('percentage').textContent = percentage + '%';
+      document.getElementById('currentAmount').textContent = currentTotal;
+      document.getElementById('remaining').textContent = Math.max(TARGET_ML - currentTotal, 0);
+      document.getElementById('waterFill').style.height = percentage + '%';
+    }
+
+    async function addWater(ml) {
+      if (todayRecords.length >= 999) {
+        showMessage("Batas maksimum 999 catatan tercapai. Silakan reset data terlebih dahulu.");
+        return;
+      }
+
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(btn => btn.classList.add('loading'));
+
+      const record = {
+        id: Date.now().toString(),
+        total_ml: ml,
+        timestamp: new Date().toISOString()
+      };
+
+      const result = await window.dataSdk.create(record);
+      
+      buttons.forEach(btn => btn.classList.remove('loading'));
+
+      if (!result.isOk) {
+        showMessage("Gagal menyimpan data. Silakan coba lagi.");
+      }
+    }
+
+    async function resetDaily() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayData = todayRecords.filter(record => 
+        record.timestamp && record.timestamp.startsWith(today)
+      );
+
+      if (todayData.length === 0) {
+        showMessage("Tidak ada data hari ini untuk direset.");
+        return;
+      }
+
+      const resetBtn = document.getElementById('resetBtn');
+      resetBtn.classList.add('loading');
+      resetBtn.textContent = 'Menghapus...';
+
+      for (const record of todayData) {
+        const result = await window.dataSdk.delete(record);
+        if (!result.isOk) {
+          console.error("Failed to delete record");
+        }
+      }
+
+      resetBtn.classList.remove('loading');
+      resetBtn.textContent = 'Reset Hari Ini';
+    }
+
+    function showMessage(msg) {
+      const subtitle = document.getElementById('targetLabel');
+      const originalText = subtitle.textContent;
+      subtitle.textContent = msg;
+      subtitle.style.color = '#e53e3e';
+      setTimeout(() => {
+        subtitle.textContent = originalText;
+        subtitle.style.color = '#718096';
+      }, 3000);
+    }
+
+    async function onConfigChange(config) {
+      const appTitle = config.app_title || defaultConfig.app_title;
+      const targetLabel = config.target_label || defaultConfig.target_label;
+      const buttonText = config.button_text || defaultConfig.button_text;
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const baseFontSize = config.font_size || defaultConfig.font_size;
+
+      document.getElementById('appTitle').textContent = appTitle;
+      document.getElementById('targetLabel').textContent = targetLabel;
+      document.getElementById('btnMain').textContent = buttonText;
+
+      document.body.style.background = linear-gradient(135deg, ${backgroundColor} 0%, ${backgroundColor}dd 100%);
+      document.querySelector('.container').style.background = surfaceColor;
+      document.querySelector('.title').style.color = textColor;
+      document.querySelector('.percentage').style.color = textColor;
+
+      const waterButtons = document.querySelectorAll('.water-button');
+      waterButtons.forEach(btn => {
+        btn.style.background = primaryColor;
+        btn.style.boxShadow = 0 4px 12px ${primaryColor}66;
+      });
+
+      document.querySelector('.reset-button').style.background = secondaryColor;
+
+      const waterFillSvg = document.querySelectorAll('.water-fill svg ellipse, .water-fill svg path');
+      waterFillSvg.forEach(el => el.setAttribute('fill', primaryColor));
+
+      const fontStack = ${fontFamily}, Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+      document.body.style.fontFamily = fontStack;
+      document.querySelector('.title').style.fontSize = ${baseFontSize * 2}px;
+      document.querySelector('.subtitle').style.fontSize = ${baseFontSize}px;
+      document.querySelector('.percentage').style.fontSize = ${baseFontSize * 3}px;
+      document.querySelector('.stat-value').style.fontSize = ${baseFontSize * 1.75}px;
+      document.querySelector('.stat-label').style.fontSize = ${baseFontSize * 0.875}px;
+      document.querySelectorAll('.water-button').forEach(el => el.style.fontSize = ${baseFontSize * 1.125}px);
+      document.querySelector('.reset-button').style.fontSize = ${baseFontSize * 0.875}px;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["app_title", config.app_title || defaultConfig.app_title],
+          ["target_label", config.target_label || defaultConfig.target_label],
+          ["button_text", config.button_text || defaultConfig.button_text]
+        ])
+      });
+    }
+
+    initApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a0ea29274981333',t:'MTc2MzU0NDA2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
